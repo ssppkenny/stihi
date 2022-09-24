@@ -1,10 +1,13 @@
 module Main exposing (find_verse, initialCmd, main)
 
 import Browser
-import Html exposing (a, button, div, h1, h2, img, input, li, text, ul)
+import Html exposing (a, button, div, h1, h2, img, input, li, span, text, ul)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput)
+import Html.Parser
+import Html.Parser.Util
 import Http
+import Json.Encode exposing (string)
 import Regex
 
 
@@ -94,6 +97,16 @@ type alias Model =
     }
 
 
+textHtml : String -> List (Html.Html msg)
+textHtml t =
+    case Html.Parser.run t of
+        Ok nodes ->
+            Html.Parser.Util.toVirtualDom nodes
+
+        Err _ ->
+            []
+
+
 initialModel =
     { rubrics = []
     , verses = []
@@ -167,7 +180,7 @@ view model =
                   else
                     text ""
                 ]
-            , ul [] (List.map (\e -> li [] [ text e ]) model.lines)
+            , ul [] (List.map (\e -> li [] [ span [] (textHtml e) ]) model.lines)
             ]
         , div []
             [ h1 [] [ text (String.fromInt (List.length model.all_verses)) ] ]
